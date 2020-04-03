@@ -1,0 +1,87 @@
+---
+title: Report on Clinic Utilisation in General/Colorectral Surgery Servic in Pilgrim
+  Hospital and associated Hospitals
+output:
+  
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+The aim of this project is to audit our use of general surgery and colorectal surgery clinic. We acquired our clinic attendance data from hospital information services. We further analysed this data to assess our utilization and DNAs
+```{r load-packages,include=FALSE}
+library(tidyverse)
+library(magrittr)
+library(here)
+library(magrittr)
+library(readxl)
+library(RColorBrewer)
+library(lubridate)
+library(forcats)
+library(gridExtra)
+setwd(here::here())
+source(file="OLD.R")
+```
+
+
+```{r}
+CU %>% ggplot(aes(BR,fill=PvP))+geom_density(alpha=0.5)+labs(title='Density Plot Demonstrating Booking Rate across sites',x='Booking Rate',fill='Peripheral Vs Pilgrim')
+```
+
+
+
+
+```{r}
+CU %>% ggplot(aes(DNARate,fill=PvP))+geom_density(alpha=0.7)+labs(x='DNA Percentage',title='Density Plot Demonstrating DNA Percentage across sites',fill='Peripheral Vs Pilgrim') + scale_fill_brewer(palette ='RdYlBu' )
+
+```
+
+```{r}
+p1 <- CU %>% ggplot(aes(BR))+geom_histogram(fill='Maroon',color='White',aes(y=(..count..)/sum(..count..)),bins=7)+ scale_y_continuous(labels=scales::percent)
+p1+labs(x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent,breaks = c(0.5,0.6,.7,.8,.9,1))
+
+```
+
+```{r}
+p2 <- CU %>% group_by(PvP) %>% ggplot(aes(BR,fill=PvP,group=PvP))+geom_histogram(position = 'dodge',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent)
+
+p2 + labs(x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent)
+
+```
+`{r} 7/193d`
+
+
+```{r}
+p3 <-  CU %>% ggplot(aes(True.U))+geom_histogram(fill='Maroon',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent) +facet_wrap(~PvP)
+p3 + labs(title = 'Histogram demonstrating the distribution of clinic utilizatation rates',caption = "Utilization value obtained by subtracting DNAs from Booked slots and dividing it by total slots" )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
