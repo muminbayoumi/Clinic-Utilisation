@@ -39,17 +39,17 @@ CU %>% ggplot(aes(DNARate,fill=PvP))+geom_density(alpha=0.7)+labs(x='DNA Percent
 
 ```{r}
 p1 <- CU %>% ggplot(aes(BR))+geom_histogram(fill='Maroon',color='White',aes(y=(..count..)/sum(..count..)),bins=7)+ scale_y_continuous(labels=scales::percent)
-p1+labs(x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent,breaks = c(0.5,0.6,.7,.8,.9,1))
+p1+labs(title='Overall Booking Rate',x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent,breaks = c(0.5,0.6,.7,.8,.9,1))
 
 ```
 
 ```{r}
 p2 <- CU %>% group_by(PvP) %>% ggplot(aes(BR,fill=PvP,group=PvP))+geom_histogram(position = 'dodge',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent)
 
-p2 + labs(x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent)
+p2 + labs(x='Booking Rate',y= 'Percentage of Clinics ',title)+scale_x_continuous(labels=scales::percent) 
 
 ```
-`{r} 7/193d`
+
 
 
 ```{r}
