@@ -1,0 +1,93 @@
+---
+title: "R Notebook"
+output:
+  html_notebook:
+    code_folding: hide
+    fig_height: 9
+    fig_width: 10
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+The aim of this project is to audit our use of general surgery and colorectal surgery clinics. We acquired our clinic attendance data from hospital information services. We further analysed this data to assess our utilization and DNAs
+```{r load-packages,include=FALSE,warning=T}
+library(tidyverse)
+library(ggnewscale)
+library(magrittr)
+library(here)
+library(magrittr)
+library(readxl)
+library(RColorBrewer)
+library(lubridate)
+library(forcats)
+library(gridExtra)
+setwd(here::here())
+source(file="OLD.R")
+```
+
+
+```{r include=T, echo=F}
+CU %>% ggplot(aes(BR,fill=PvP))+geom_density(alpha=0.5)+labs(title='Density Plot Demonstrating Booking Rate across sites',x='Booking Rate',fill='Peripheral Vs Pilgrim')
+```
+
+
+
+
+```{r warning=FALSE}
+CU %>% ggplot(aes(DNARate,fill=PvP))+geom_density(alpha=0.7)+labs(x='DNA Percentage',title='Density Plot Demonstrating DNA Percentage across sites',fill='Peripheral Vs Pilgrim') + scale_fill_brewer(palette ='RdYlBu' )
+
+```
+
+```{r warning=FALSE}
+p1 <- CU %>% ggplot(aes(BR))+geom_histogram(fill='Maroon',color='White',aes(y=(..count..)/sum(..count..)),bins=7)+ scale_y_continuous(labels=scales::percent)
+p1+labs(title='Overall Booking Rate',x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent,breaks = c(0.5,0.6,.7,.8,.9,1))
+
+```
+
+```{r warning=FALSE}
+p2 <- CU %>% group_by(PvP) %>% ggplot(aes(BR,fill=PvP,group=PvP))+geom_histogram(position = 'dodge',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent)
+
+p2 + labs(x='Booking Rate',y= 'Proportion of Clinics ',title)+scale_x_continuous(labels=scales::percent) +scale_fill_viridis_d("Peripheral Vs Pilgrim",option = "cividis",begin = 0.1,end = 0.9)
+
+```
+
+
+
+```{r warning=FALSE}
+p3 <-  CU %>% ggplot(aes(True.U))+geom_histogram(fill='Maroon',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent) +facet_wrap(~PvP)
+p3 + labs(title = 'Histogram demonstrating the distribution of clinic utilizatation rates',caption = "Utilization value obtained by subtracting DNAs from Booked slots and dividing it by total slots", x="Utilization Rate",y="Proportion of Clinics",
+subtitle="# of Clinics 196 over the period between Aug 2019 and Jan 2020" )+ scale_fill_viridis_d(option = "cividis",begin = 0.1,end = 0.9)
+```
+
+```{r  warning=FALSE,echo=F}
+CU %<>% mutate(OneVsTwo=cut(Total.Slots,breaks = c(-Inf,13,Inf),labels =c('One Man','Two Man'))) 
+PCD1 <- CU %>%
+  filter(OneVsTwo=="One Man") %>% 
+  group_by(Session.Clinic.Code,M,OneVsTwo)%>%
+  summarise(MedianBooking=median(Utilisation),MedianUtilization=median(True.U),MedianTS=median(CU$Total.Slots[CU$OneVsTwo=="One Man"]),count=n()) 
+
+PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
+  geom_point(stat = "identity",position="dodge",aes(y=MedianBooking),size=3)+ 
+  new_scale_colour()+geom_point(aes(y=MedianUtilization,),
+                                position=position_nudge(x=0.4),color='Maroon',size=3)+
+ scale_y_continuous(limits=c(0.5,1),labels=scales::percent) +geom_hline(yintercept =9/11,alpha=.8,color='red') + labs(x="Clinic",y="Utilization",title="Booking and Utilization rate per month for one man clinics",subtitle = "Black shows Booking Rates while red shows end utilization rate, red line is ~ 80% Utilisation",shape="Month")+ theme(axis.text.x = element_text(angle = 70,vjust = 0.5,face = 'bold',family = 'arial'),)
+```
+
+```{r warning=FALSE,echo=F}
+PCD2 <- CU %>%
+  filter(OneVsTwo=="Two Man") %>% 
+  group_by(Session.Clinic.Code,M,OneVsTwo)%>%
+  summarise(MedianBooking=median(Utilisation),MedianUtilization=median(True.U),MedianTS=median(CU$Total.Slots[CU$OneVsTwo=="Two Man"]),count=n()) 
+
+PCD2 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
+  geom_jitter(stat = "identity",position="dodge",aes(y=MedianBooking),size=3,jitter=0.6)+
+  new_scale_colour()+geom_point(aes(y=MedianUtilization,),
+                                position=position_nudge(x=0.5),color='Maroon',size=3)+
+  scale_y_continuous(limits=c(0.5,1),labels=scales::percent)+
+  geom_hline(yintercept =17/20,alpha=.8,color='red') + labs(x="Clinic",y="Utilization",title="Booking and Utilization rate per month for two man clinics",subtitle = "Black shows Booking Rates while red shows end utilization rate, red line is ~ 80% Utilisation",shape="Month") 
+
+```
+
+
+

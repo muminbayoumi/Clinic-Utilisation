@@ -53,15 +53,15 @@ CU %>% group_by(PvP,Clinic.Hospital,DNAs) %>% summarise(count=n()) %>%  ggplot(a
 #Clean.Up 
 CU$Clinic.Hospital %<>% as_factor()
 CU$Specialty %<>% as_factor()  
-CU$Session.Start.Date %<>% date()
-CU %<>%  mutate(M=month(Session.Start.Date,label = T))
+CU$Session.Start.Date %<>% ymd_hms()
+CU %<>%  mutate(M=month(Session.Start.Date,label = T),Year=year(Session.Start.Date))
 CU$M %<>% forcats::fct_relevel('Jan',after=12)
 CU$Utilisation %<>% as.numeric() 
 CU$PvP %<>% as_factor()
 CU %<>%  mutate(DNARate= DNAs/Booked.Slots)
 CU %<>%  mutate(True.U= (Booked.Slots-DNAs)/Total.Slots)
 CU %<>%  mutate(BR=Booked.Slots/Total.Slots)
-CU %<>% filter(Booked.Slots!=0)
+CU
 
 
 
@@ -100,7 +100,7 @@ CU %>%  ggplot(aes(Utilisation,x=Clinic.Hospital))+geom_boxplot(alpha=.5) + anno
 CU %>%  ggplot(aes(True.U,x=Clinic.Hospital))+geom_boxplot(alpha=.5) + annotation_custom(tableGrob(CUsumHTU), xmin=2, xmax=2.5, ymin=.4, ymax=0.6)
 
 
-CUsumHDNA <-  CU %>% group_by(Clinic.Hospital) %>% summarise(P25=paste0(round(quantile(DNARate)[[2]],2)*100,'%'),P75=paste0(round(quantile(DNARate)[[4]],2)*100,'%'))
+CUsumHDNA <-  CU %>% group_by(Clinic.Hospital) %>% summarise(P25=paste0(round(quantile(DNARate,na.rm = T)[[2]],2)*100,'%'),P75=paste0(round(quantile(DNARate,na.rm = T)[[4]],2)*100,'%'))
 CU %>%  ggplot(aes(DNARate,x=Clinic.Hospital))+geom_boxplot(alpha=.5) + annotation_custom(tableGrob(CUsumHDNA), xmin=1, xmax=2.5, ymin=0, ymax=0.5)
 
 
@@ -128,7 +128,4 @@ CU[CU$Utilisation==0,"Session.Clinic.Code"]
 CU$FB <- 'Yes'
 CU$FB[which(CU$Total.Slots != CU$Booked.Slots)] <- 'No'
 
-CU %>% ggplot(aes(as_factor(Total.Slots),fill=FB))+geom_bar()
-CU$DN <- 'No'
-CU$DN[which(CU$DNAs>=1)] <- 'Yes'
-CU %>% filter(FB=='No') %>% ggplot(aes(Available.Slots,fill=DN))+geom_bar()+facet_wrap(~M)
+
