@@ -1,18 +1,28 @@
 ---
-title: "R Notebook"
 output:
+  pdf_document:
+    extra_dependencies: xcolor
+    keep_tex: yes
+    md_extensions: +bracketed_spans
+    pandoc_args: --lua-filter=color-text.lua
+    toc: yes
   html_notebook:
     code_folding: hide
-    fig_height: 9
-    fig_width: 10
+    md_extensions: +bracketed_spans
+    pandoc_args: --lua-filter=color-text.lua
     toc: yes
-  pdf_document:
+  word_document:
     toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+tables: yes
+editor_options:
+  chunk_output_type: console
 ---
-
-The aim of this project is to audit our use of general surgery and colorectal surgery clinics. We acquired our clinic attendance data from hospital information services. We further analysed this data to assess our utilization and DNAs
-```{r load-packages,include=FALSE,warning=T}
+```{r load-packages,include=FALSE,warning=F}
 library(tidyverse)
+
 library(ggnewscale)
 library(magrittr)
 library(here)
@@ -22,72 +32,190 @@ library(RColorBrewer)
 library(lubridate)
 library(forcats)
 library(gridExtra)
+library(ggpubr)
+library(extrafont)
+
+loadfonts()
 setwd(here::here())
 source(file="OLD.R")
+source('colorize.R')
 ```
 
+## A comparison across clinics and between pilgrim and peripheral sites
+***
+The aim of this project is to audit our use of general surgery and colorectal surgery clinics. We acquired our clinic attendance data from hospital information services. We further analysed this data to assess our utilization and DNAs. These are the clinic codes use for the purpose of this analysis **`r unique(CU$Session.Clinic.Code)`**
 
-```{r include=T, echo=F}
-CU %>% ggplot(aes(BR,fill=PvP))+geom_density(alpha=0.5)+labs(title='Density Plot Demonstrating Booking Rate across sites',x='Booking Rate',fill='Peripheral Vs Pilgrim')
+***
+```{cat, include=F,engine.opts = list(file = "color-text.lua")}
+Span = function(span)
+  color = span.attributes['color']
+  -- if no color attribute, return unchange
+  if color == nil then return span end
+  
+  -- tranform to <span style="color: red;"></span>
+  if FORMAT:match 'html' then
+    -- remove color attributes
+    span.attributes['color'] = nil
+    -- use style attribute instead
+    span.attributes['style'] = 'color: ' .. color .. ';'
+    -- return full span element
+    return span
+  elseif FORMAT:match 'latex' then
+    -- remove color attributes
+    span.attributes['color'] = nil
+    -- encapsulate in latex code
+    table.insert(
+      span.content, 1,
+      pandoc.RawInline('latex', '\\textcolor{'..color..'}{')
+    )
+    table.insert(
+      span.content,
+      pandoc.RawInline('latex', '}')
+    )
+    -- returns only span content
+    return span.content
+  else
+    -- for other format return unchanged
+    return span
+  end
+end
 ```
+```{r include=F}
+knitr::opts_chunk$set(echo=F, error=F, fig.align='center', fig.height=3, fig.width=4, message=FALSE, warning=FALSE, dev='png', dpi=400)
+```
+## 1.The Data
+With a preliminary view we can see that our [Pilgrim Median Booking Rate]{color="blue"}:`r round(median(CU$BR[CU$PvP=='Pilgrim']),3)*100`% is marginally higher than our [Peripheral Median Booking Rate]{color="red"}:`r round(median(CU$BR[CU$PvP=='Peripheral']),3)*100`%.  Difference in median was found to be statistically significant at p-value of *`r round(wilcox.test(CU$BR~CU$PvP)$p.value,3)`*(Graph 1.1A). Similarly our [Pilgrim Median Utilizaton Rate]{color="blue"}:`r round(median(CU$True.U[CU$PvP=='Pilgrim']),3)*100`% is marginally higher than our [Peripheral Median Utilization Rate]{color="red"}:`r round(median(CU$True.U[CU$PvP=='Peripheral']),3)*100`%.  Difference in median was found to be statistically significant at p-value of *`r round(wilcox.test(CU$True.U~CU$PvP)$p.value,3)`*(Graph 1.1B)  
 
+### Graph 1.1
+```{r warning=FALSE,echo=F,message=FALSE,error=F,fig.width=6,fig.height=3}
+p1 <- CU %>% ggplot(aes(BR,fill=PvP))+geom_density(alpha=0.5)+
+  geom_vline(xintercept =median(CU$BR[CU$PvP=='Pilgrim']),color='cyan')+
+  geom_vline(xintercept =median(CU$BR[CU$PvP=='Peripheral']),color='red' )+
+  labs(title='Density Plot Demonstrating Booking Rate \nacross sites',
+       x='Booking Rate',
+       y=" ",
+       fill='Peripheral Vs Pilgrim')+
+  theme(title = element_text(face='bold'),plot.title=element_text(size=8))
 
-
-
-```{r warning=FALSE}
-CU %>% ggplot(aes(DNARate,fill=PvP))+geom_density(alpha=0.7)+labs(x='DNA Percentage',title='Density Plot Demonstrating DNA Percentage across sites',fill='Peripheral Vs Pilgrim') + scale_fill_brewer(palette ='RdYlBu' )
+p2 <- CU %>% ggplot(aes(True.U,fill=PvP))+geom_density(alpha=0.7)+
+  geom_vline(xintercept =median(CU$True.U[CU$PvP=='Pilgrim']),color='cyan')+
+  geom_vline(xintercept =median(CU$True.U[CU$PvP=='Peripheral']),color='red' )+
+  labs(x='Utilization',
+       title='Density Plot Demonstrating Utilization \nacross sites',
+       y="",
+       fill='Peripheral Vs Pilgrim') + 
+  theme(title = element_text(face='bold'),plot.title=element_text(size=8))
+ggarrange(p1,p2,labels=c('A','B'),common.legend = TRUE, legend = "bottom")
 
 ```
-
-```{r warning=FALSE}
-p1 <- CU %>% ggplot(aes(BR))+geom_histogram(fill='Maroon',color='White',aes(y=(..count..)/sum(..count..)),bins=7)+ scale_y_continuous(labels=scales::percent)
-p1+labs(title='Overall Booking Rate',x='Booking Rate',y= 'Percentage of Clinics ')+scale_x_continuous(labels=scales::percent,breaks = c(0.5,0.6,.7,.8,.9,1))
-
-```
-
-```{r warning=FALSE}
-p2 <- CU %>% group_by(PvP) %>% ggplot(aes(BR,fill=PvP,group=PvP))+geom_histogram(position = 'dodge',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent)
-
-p2 + labs(x='Booking Rate',y= 'Proportion of Clinics ',title)+scale_x_continuous(labels=scales::percent) +scale_fill_viridis_d("Peripheral Vs Pilgrim",option = "cividis",begin = 0.1,end = 0.9)
-
-```
-
-
-
-```{r warning=FALSE}
-p3 <-  CU %>% ggplot(aes(True.U))+geom_histogram(fill='Maroon',color="White",aes(y=(..count..)/sum(..count..)),bins=4)+scale_y_continuous(labels=scales::percent) +facet_wrap(~PvP)
-p3 + labs(title = 'Histogram demonstrating the distribution of clinic utilizatation rates',caption = "Utilization value obtained by subtracting DNAs from Booked slots and dividing it by total slots", x="Utilization Rate",y="Proportion of Clinics",
-subtitle="# of Clinics 196 over the period between Aug 2019 and Jan 2020" )+ scale_fill_viridis_d(option = "cividis",begin = 0.1,end = 0.9)
-```
-
-```{r  warning=FALSE,echo=F}
+### Table 1: Total number of One and Two Man Clinics Per Month for Pilgrim and Peripheral Sites
+```{r echo=FALSE, paged.print=F}
 CU %<>% mutate(OneVsTwo=cut(Total.Slots,breaks = c(-Inf,13,Inf),labels =c('One Man','Two Man'))) 
+
+t1<- CU %>% filter(OneVsTwo=="One Man") %>%  group_by(M,OneVsTwo,PvP) %>% summarise(count=n()) %>% arrange(M,PvP,OneVsTwo) %>% mutate(Site=PvP) %>% select(-PvP)
+
+t2<- CU %>% filter(OneVsTwo=="Two Man") %>%  group_by(M,OneVsTwo,PvP) %>% summarise(count=n()) %>% arrange(M,PvP,OneVsTwo) %>% mutate(Site=PvP)%>% select(-PvP)
+knitr::kable(list(t1,t2),booktabs=T)
+```  
+
+### Graph 1.2 Histogram demonstrating the distribution of Clinic Utilizatation Rates
+```{r warning=FALSE,echo=F,message=FALSE,error=F,fig.width=6}
+p3 <-  CU %>% ggplot(aes(True.U))+
+  geom_histogram(fill='Maroon',color="White",
+                 aes(y=(..count..)/sum(..count..)),
+                 bins=4)+
+  scale_y_continuous(labels=scales::percent) +facet_wrap(~PvP)
+p3 + 
+  labs( x="Utilization Rate",
+           y="Proportion of Clinics",
+           subtitle="# of Clinics 196 over the period between Aug 2019 and Jan 2020" )+
+  scale_fill_viridis_d(option = "cividis",begin = 0.1,end = 0.9)
+
+```  
+
+## 2.Further Breakdown
+The following graphs demonstrate per clinic data. [**Black Shapes**]{color='black'} demonstrate booking rate while [**Red Shapes**]{color='red'} demonstrate utilization rates. These are monthly rates ie the actual figure is an average of clinics used per month. **Booking rate** is $$\frac{initial\ booked slots}{total\ available\ slots}$$ while [**Utilization Rate**]{color='red'} is  $$\frac{attended \ clinic\  slots}{booked\ slots}$$
+
+### Graph 2.1 Booking and Utilization rate per month for One Man clinics
+```{r echo=F, error=F, fig.align='center', fig.height=7, fig.width=7, message=FALSE, warning=FALSE, dev='png', dpi=400}
+
+
 PCD1 <- CU %>%
   filter(OneVsTwo=="One Man") %>% 
   group_by(Session.Clinic.Code,M,OneVsTwo)%>%
   summarise(MedianBooking=median(Utilisation),MedianUtilization=median(True.U),MedianTS=median(CU$Total.Slots[CU$OneVsTwo=="One Man"]),count=n()) 
 
-PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
-  geom_point(stat = "identity",position="dodge",aes(y=MedianBooking),size=3)+ 
-  new_scale_colour()+geom_point(aes(y=MedianUtilization,),
-                                position=position_nudge(x=0.4),color='Maroon',size=3)+
- scale_y_continuous(limits=c(0.5,1),labels=scales::percent) +geom_hline(yintercept =9/11,alpha=.8,color='red') + labs(x="Clinic",y="Utilization",title="Booking and Utilization rate per month for one man clinics",subtitle = "Black shows Booking Rates while red shows end utilization rate, red line is ~ 80% Utilisation",shape="Month")+ theme(axis.text.x = element_text(angle = 70,vjust = 0.5,face = 'bold',family = 'arial'),)
-```
+plotPCD <- PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
+  geom_point(stat = "identity",position=position_nudge(-0.4),aes(y=MedianBooking),size=3)+ 
+  new_scale_colour()+
+  geom_point(aes(y=MedianUtilization),position=position_jitter(0.1),color='Maroon',size=3,)+
+ scale_y_continuous(limits=c(0.5,1),labels=scales::percent) +
+ geom_hline(yintercept =9/11,alpha=.8,color='red')
 
-```{r warning=FALSE,echo=F}
+plotPCD +
+ labs(x="Clinic",y="Utilization",
+      subtitle = "Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation \nTotal Number of Clinics: 113 between Aug '19 - Jan '20",
+      shape="Month")+
+  theme(axis.text.x = element_text(angle = 70,
+                                   vjust = 0.5,
+                                   face = 'bold'),
+        title =element_text(face = "bold"),
+        plot.subtitle = element_text(face = "italic"),
+        axis.ticks.x = element_line(size = unit(2,'mm'),lineend = 'round',colour = 'grey30'))
+```
+### Graph 2.2 Booking and Utilization Rates per month for Two Man clinics
+```{r echo=F, error=F, fig.align='center', fig.height=7, fig.width=7, message=FALSE, warning=FALSE, dev='png', dpi=400}
 PCD2 <- CU %>%
   filter(OneVsTwo=="Two Man") %>% 
   group_by(Session.Clinic.Code,M,OneVsTwo)%>%
   summarise(MedianBooking=median(Utilisation),MedianUtilization=median(True.U),MedianTS=median(CU$Total.Slots[CU$OneVsTwo=="Two Man"]),count=n()) 
 
-PCD2 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
-  geom_jitter(stat = "identity",position="dodge",aes(y=MedianBooking),size=3,jitter=0.6)+
+plotPCD2 <- PCD2 %>% filter(Session.Clinic.Code!="SD-MMCSD",Session.Clinic.Code!="PH-MIR41") %>% ggplot(aes(x=Session.Clinic.Code,shape = M))+
+  geom_point(stat = "identity",position=position_nudge(-.4),aes(y=MedianBooking),size=3,jitter=0.6)+
   new_scale_colour()+geom_point(aes(y=MedianUtilization,),
-                                position=position_nudge(x=0.5),color='Maroon',size=3)+
+                                position=position_jitter(0.1),color='Maroon',size=3)+
   scale_y_continuous(limits=c(0.5,1),labels=scales::percent)+
-  geom_hline(yintercept =17/20,alpha=.8,color='red') + labs(x="Clinic",y="Utilization",title="Booking and Utilization rate per month for two man clinics",subtitle = "Black shows Booking Rates while red shows end utilization rate, red line is ~ 80% Utilisation",shape="Month") 
+  geom_hline(yintercept =17/20,alpha=.8,color='red') 
+plotPCD2 + labs(x="Clinic",
+                y="Utilization",
+                subtitle = "Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation\nTotal Number of Clinics 83 between Aug '19 - Jan '20",shape="Month")  +
+  theme(title = element_text(face="bold"),
+        plot.subtitle = element_text(face="italic"),
+        axis.text.x=element_text(angle = 70,
+                                 vjust = 0.5,
+                                 face='bold'),
+        axis.ticks.x = element_line(size = unit(2,'mm'),lineend = 'round',colour = 'grey30'))
+```
+### Graph 2.3 Utilization and Booking Rate per month across Peripheral vs Pilgrim clinics
+```{r warning=FALSE,echo=F,message=FALSE,error=F,dev='png',fig.height=7, fig.width=7,dpi=400,fig.align='center'}
+PHD <- CU %>% group_by(PvP,M) %>% summarise(MedianBooking=median(Utilisation),MedianUtil=median(True.U))
+
+PHD %>% ggplot(aes(x=M,shape=PvP))+ geom_point(aes(y=MedianBooking),color='black',size=4) + new_scale_color()+  geom_point(aes(y=MedianUtil),color='Maroon',size=4,position = position_nudge(x=0.4)) +
+  geom_hline(yintercept = 0.8,color="Red")+
+  scale_y_continuous(limits=c(0.6,1),labels=scales::percent)+
+  labs(subtitle = paste0("Period Between Aug 19 and Jan 20 is shown","\nNo. Peripheral Clinics: ",table(CU$PvP)[1]," | ","No. Pilgrim Clinics:",table(CU$PvP)[2]),shape="Site",x="Month",y="Rate")+theme(title = element_text(face="bold"),plot.subtitle = element_text(face="italic"))
 
 ```
+### Graph 2.4 Utilization and Booking Rate per month across Peripheral vs Pilgrim clinics
+```{r warning=FALSE,echo=F,message=FALSE,error=F,fig.height=7, fig.width=7,dev='png',dpi=400,fig.align='center'}
+PSD <- CU %>% group_by(Clinic.Hospital,M) %>% summarise(MedianBooking=median(Utilisation),MedianUtil=median(True.U))
 
+PSD %>% ggplot(aes(x=M,shape=Clinic.Hospital))+ geom_point(aes(y=MedianBooking),color='black',size=4) + new_scale_color()+  geom_jitter(aes(y=MedianUtil),color='Maroon',size=4,position = position_nudge(x=0.4)) +
+  geom_hline(yintercept = 0.8,color="Red")+
+  scale_y_continuous(limits=c(0.6,1),labels=scales::percent)+
+  labs(subtitle = paste0("Period Between Aug 19 and Jan 20 is shown","\nNo. Johnson Hosp: ",table(CU$Clinic.Hospital)[1]," | ","No. Pilgrim Clinics:",table(CU$Clinic.Hospital)[2]," | ","Skegness and District:",table(CU$Clinic.Hospital)[3]),shape="Site",x="Month",y="Rate")+theme(title = element_text(face="bold"),plot.subtitle = element_text(face="italic"))
+```
+***
+## 3.Discussion
 
+[Graph 2.4](#graph-2.4) & [Graph 2.3](#graph-2.3) demonstrates again underutilized peripheral clinics clinics(p-value:`r round(wilcox.test(CU$True.U~CU$PvP)$p.value,3)`) despite having similar Booking Rates. This appears to be more during certain month. Again however due the small sample sizes it is not possible to perform adequate analysis. 
 
+Initially it seems that the differences although statistically significant were small. However when consulting the last 4 charts it seems evident that a notable number of our clinics were underbooked at 80% booking rate(which translates to 2 clinic slots for 1-man-clinics and about 3 clinic slots for 2-man-clinics). Although those numbers warrant attention their statistical significance is not easily demonstrated due to the small sample sizes(As shown on table 1).  If we were to assume their significance  the next question we need to answer is *why?*.
+
+* Why are our **Booking rates** occasionally/frequently falling below our arbitrary 80%? 
+* Why are we having low [**Utilization Rate**]{color='red'}? Is it something we need to capitalize on?  
+
+And Finally the next pertinent question is do we that small of a population to explain our underutilization?  
+***  
+
+## 4.Recommendations
