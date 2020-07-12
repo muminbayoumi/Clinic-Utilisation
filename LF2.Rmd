@@ -127,13 +127,13 @@ ggarrange(p1,p2,labels=c('A','B'),common.legend = TRUE, legend = "bottom")
 
 ```
 
-### Table-1: Total number of One and Two Man Clinics Per Month for Pilgrim and Peripheral Sites
+
 ```{r echo=F, paged.print=FALSE,fig.pos='H'}
 
 t1<- CU %>% filter(OneVsTwo=="One Man") %>%  group_by(M,OneVsTwo,PvP) %>% summarise(count=n()) %>% arrange(M,PvP,OneVsTwo) %>% mutate(Site=PvP) %>% select(-PvP)
 
 t2<- CU %>% filter(OneVsTwo=="Two Man") %>%  group_by(M,OneVsTwo,PvP) %>% summarise(count=n()) %>% arrange(M,PvP,OneVsTwo) %>% mutate(Site=PvP)%>% select(-PvP)
-knitr::kable(list(t1,t2),format = "latex",booktabs=T) 
+knitr::kable(list(t1,t2),format = "latex",booktabs=T,caption = "Total Number of One and Two Man Clinics for Pilgrim and Peripheral Sites") 
 ```
 ### Graph-1.2 Histogram demonstrating the distribution of Clinic Utilizatation Rates
 ```{r warning=FALSE,echo=F,message=FALSE,error=F,fig.width=6}
@@ -163,13 +163,22 @@ PCD1 <- CU %>%
   group_by(Session.Clinic.Code,M,OneVsTwo)%>%
   summarise(MedianBooking=median(Utilisation),MedianUtilization=median(True.U),MedianTS=median(CU$Total.Slots[CU$OneVsTwo=="One Man"]),count=n()) 
 
+PCD1.1 <- CU %>%
+  filter(OneVsTwo == "One Man") %>%
+  group_by(Session.Clinic.Code) %>%
+  summarise(MedianBooking = median(Utilisation),
+            MedianUtilization = median(True.U) , 
+            MedianTS = median(CU$Total.Slots[CU$OneVsTwo == "One Man"]), 
+            count = n())
+
+
 plotPCD <- PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD") %>%
   ggplot(aes(x=Session.Clinic.Code,shape = M))+
   geom_point(
     stat = "identity",
     position=position_jitter(h=0.01,w=.22,seed = 2),
     aes(y=MedianBooking,
-        size=3.5),show.legend = F)+ 
+        size=3),show.legend = F)+ 
   new_scale_colour()+
   geom_point(aes(y=MedianUtilization,
                  x=as.numeric(as_factor(Session.Clinic.Code))+0.2),
@@ -177,6 +186,8 @@ plotPCD <- PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD") %>%
              color='Maroon',size=3.5,)+
   scale_y_continuous(limits=c(0.5,1.05),labels=scales::percent) +
   geom_hline(yintercept =9/11,alpha=.8,color='red')+
+  new_scale_colour() +
+  geom_point(data = PCD1.1, aes(y = MedianUtilization, x = as.numeric(as_factor(Session.Clinic.Code))), shape = 5, color = "navy", alpha = 0.7, size = 8) +
   geom_rect(aes(ymin=-Inf ,ymax=Inf,
                 xmin=as.numeric(as_factor(Session.Clinic.Code))-0.5,
                 xmax=as.numeric(as_factor(Session.Clinic.Code))+0.5
@@ -213,7 +224,7 @@ PCD2.1 <- CU %>%
   filter(OneVsTwo == "Two Man") %>%
   group_by(Session.Clinic.Code) %>%
   summarise(MedianBooking = median(Utilisation),
-            MedianUtilization = median(True.U), 
+            MedianUtilization = median(True.U) , 
             MedianTS = median(CU$Total.Slots[CU$OneVsTwo == "Two Man"]), 
             count = n())
 
@@ -276,17 +287,8 @@ PSD %>% ggplot(aes(x=M,shape=Clinic.Hospital))+ geom_point(aes(y=MedianBooking),
   scale_y_continuous(limits=c(0.6,1),labels=scales::percent)+
   labs(subtitle = paste0("Period Between Aug 19 and Jan 20 is shown","\nNo. Johnson Hosp: ",table(CU$Clinic.Hospital)[1]," | ","No. Pilgrim Clinics:",table(CU$Clinic.Hospital)[2]," | ","Skegness and District:",table(CU$Clinic.Hospital)[3]),shape="Site",x="Month",y="Rate")+theme(title = element_text(face="bold"),plot.subtitle = element_text(face="italic"))
 ```
-```{r}
-DNAData <- CU %>% group_by(M,OneVsTwo) %>% summarise(MedianD=median(DNARate,na.rm = T))
 
-
-  DNAData %>% ggplot(aes(x=M,y=MedianD,col=OneVsTwo))+
-    geom_boxplot(data=CU,aes(y=DNARate,fill=OneVsTwo),alpha=0.2,color="grey70")+
-    geom_point(size=4,shape=18)+
-    scale_y_continuous(limits=c(0.05,.128),labels= scales::percent)+
-    labs(x="Month",y="Median Non-Attendance")
-```
-
+### Graph-2.5 Per Clinic DNA Rate
 ```{r}
 DNAData2 <- CU %>% group_by(Session.Clinic.Code,OneVsTwo) %>% summarise(MedianD=median(DNARate,na.rm = T),count=n()) %>% filter(Session.Clinic.Code!="SD-MMCSD")
 
@@ -306,16 +308,17 @@ PLotDNA2 +
 
 ## 3.Discussion
 
-[Graph-2.4](#graph2.4) & [Graph-2.3](#graph2.3) demonstrates again underutilized peripheral clinics clinics(p-value:`r round(wilcox.test(CU$True.U~CU$PvP)$p.value,3)`) despite having similar Booking Rates. This appears to be more during certain month. Again however due the small sample sizes it is not possible to perform adequate analysis. 
+[Graph-2.1](#graph2.1) and [Graph-2.2](#graph2.2) show a clear underbooking with even clearer non-attendance.
+[Graph-2.4](#graph2.4) & [Graph-2.3](#graph2.3) demonstrates again underutilized peripheral clinics clinics(p-value:`r round(wilcox.test(CU$True.U~CU$PvP)$p.value,3)`) despite having similar Booking Rates. This appears to be more during certain month. Again however due the small sample sizes it is not possible to perform adequate statistical analysis. 
 
 Initially it seems that the differences although statistically significant were small. However when consulting the last 4 charts it seems evident that a notable number of our clinics were underbooked at 80% booking rate(which translates to 2 clinic slots for 1-man-clinics and about 3 clinic slots for 2-man-clinics). Although those numbers warrant attention their statistical significance is not easily demonstrated due to the small sample sizes(As shown on [Table 1.1](#table_1.1)).  If we were to assume their significance  the next question we need to answer is *why?*.
 
-On further discussion with staff responsible for clinic booking we now  think most deficits in booking rates is due to patient calling in 1 or 2 days before and cancelling. A patient would be considered as DNA only if he/she was still recorded to come in on the day of the clinic but didn't.
+On further discussion with staff responsible for clinic booking we now  think most deficits in booking rates is due to patient calling in 1 or 2 days before and cancelling. A patient would be considered as DNA only if he/she was still recorded to come in on the day of the clinic but didn't. 
 
 We suggest one possible option is to over book clinics with 1 -2 patients from the  next similar clinic and advising them that this is only a potential booking and that they will have a garaunteed booking ontop of that. That they should be ready to be called in 1-2 day's notice.
 
 
-This should bring up the booking rate as well as show us a complete true utilizaition rate to work on next month.
+This should bring up the booking rate as well as show us a complete true utilizaition rate to work on next audit cycle. the aim will be to create a tool whereby this utilization rate is automatically calculated and used to reasses on  a monthly basis.
   
 
 ***  
@@ -324,11 +327,11 @@ This should bring up the booking rate as well as show us a complete true utiliza
 
 We suggest  the following recommendations:
 
-* *-*Create waiting list with prebooking patients on multiple clinics 
-* *-*Allocate Clinic Space by proximity  
-* *-*Monthly Review of Booking Rate  
-* *-*Improve Communication Between Staff accross sites  
-* *-*Disseminate This Report and following monthly Booking Rates to all concerned Staff  
+* Create waiting list with prebooking patients on multiple clinics 
+* Allocate Clinic Space by proximity  
+* Monthly Review of Booking Rate  
+* Improve Communication Between Staff accross sites  
+* Disseminate This Report and following monthly Booking Rates to all concerned Staff  
 
   
 
