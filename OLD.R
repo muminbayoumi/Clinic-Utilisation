@@ -32,13 +32,22 @@ CU %<>% filter(Session.Clinic.Code=='SD-ATESD'|
                   Session.Clinic.Code=='PH-ZAI50'|
                   Session.Clinic.Code=='PH-GOR52')
 
+
+
+
 #Two Man Clinics
 
-CU$TMC <-  'No'
-CU$TMC[CU$Session.Clinic.Code=='PH-RTH11'|CU$Session.Clinic.Code=='PH-ATE35'|
+CU$OneVsTwo <-  'One Man'
+CU$OneVsTwo[CU$Session.Clinic.Code=='PH-RTH11'|CU$Session.Clinic.Code=='PH-ATE35'|
             CU$Session.Clinic.Code=='PH-MIR41'|
-            CU$Session.Clinic.Code=='PH-ZAI50'] <-  "Yes"
-CU$TMC %<>%  as_factor()
+            CU$Session.Clinic.Code=='PH-ZAI50'] <-  "Two Man"
+CU$OneVsTwo %<>%  as_factor()
+
+
+
+#Clinic Volume
+
+CU %<>% mutate(vol=cut(Total.Slots,breaks = c(-Inf,13,Inf),labels =c('12 Slots','21 Slots'))) 
 
 # Peripheral VS Pilgrim 
 CU$PvP <- 'Pilgrim'
@@ -127,5 +136,7 @@ CU[CU$Utilisation==0,"Session.Clinic.Code"]
 
 CU$FB <- 'Yes'
 CU$FB[which(CU$Total.Slots != CU$Booked.Slots)] <- 'No'
+
+
 
 

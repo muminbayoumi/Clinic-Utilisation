@@ -29,6 +29,8 @@
 }
 \usepackage{hyperref}
 \hypersetup{
+            pdftitle={Clinic Utilisation Report},
+            pdfauthor={M.Mohamed;M.Ali;M.Rao},
             pdfborder={0 0 0},
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
@@ -64,12 +66,30 @@
 \def\fps@figure{htbp}
 \makeatother
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\floatplacement{figure}{H}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{flafter}
+\usepackage{flafter}
 
-\author{}
-\date{\vspace{-2.5em}}
+\title{Clinic Utilisation Report}
+\author{M.Mohamed;M.Ali;M.Rao}
+\date{}
 
 \begin{document}
+\maketitle
 
 {
 \setcounter{tocdepth}{2}
@@ -92,6 +112,8 @@ PH-RTH45, PH-ZAI50, SD-MMCSD, SD-ATESD}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
+\newpage
+
 \hypertarget{the-data}{%
 \subsection{1.The Data}\label{the-data}}
 
@@ -111,7 +133,7 @@ in median was found to be statistically significant at p-value of
 \begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-3-1} \end{center}
 
 \hypertarget{table-1-total-number-of-one-and-two-man-clinics-per-month-for-pilgrim-and-peripheral-sites}{%
-\subsubsection{Table 1: Total number of One and Two Man Clinics Per
+\subsubsection{Table-1: Total number of One and Two Man Clinics Per
 Month for Pilgrim and Peripheral
 Sites}\label{table-1-total-number-of-one-and-two-man-clinics-per-month-for-pilgrim-and-peripheral-sites}}
 
@@ -122,19 +144,19 @@ Sites}\label{table-1-total-number-of-one-and-two-man-clinics-per-month-for-pilgr
 \toprule
 M & OneVsTwo & count & Site\\
 \midrule
-Aug & One Man & 2 & Peripheral\\
-Aug & One Man & 13 & Pilgrim\\
-Sep & One Man & 1 & Peripheral\\
+Aug & One Man & 4 & Peripheral\\
+Aug & One Man & 18 & Pilgrim\\
+Sep & One Man & 5 & Peripheral\\
 Sep & One Man & 13 & Pilgrim\\
-Oct & One Man & 3 & Peripheral\\
+Oct & One Man & 5 & Peripheral\\
 \addlinespace
-Oct & One Man & 17 & Pilgrim\\
+Oct & One Man & 21 & Pilgrim\\
 Nov & One Man & 6 & Peripheral\\
-Nov & One Man & 20 & Pilgrim\\
-Dec & One Man & 5 & Peripheral\\
-Dec & One Man & 13 & Pilgrim\\
+Nov & One Man & 22 & Pilgrim\\
+Dec & One Man & 7 & Peripheral\\
+Dec & One Man & 14 & Pilgrim\\
 \addlinespace
-Jan & One Man & 2 & Peripheral\\
+Jan & One Man & 4 & Peripheral\\
 Jan & One Man & 18 & Pilgrim\\
 \bottomrule
 \end{tabular}
@@ -143,17 +165,11 @@ Jan & One Man & 18 & Pilgrim\\
 \toprule
 M & OneVsTwo & count & Site\\
 \midrule
-Aug & Two Man & 2 & Peripheral\\
-Aug & Two Man & 14 & Pilgrim\\
-Sep & Two Man & 4 & Peripheral\\
+Aug & Two Man & 9 & Pilgrim\\
 Sep & Two Man & 9 & Pilgrim\\
-Oct & Two Man & 2 & Peripheral\\
-\addlinespace
-Oct & Two Man & 17 & Pilgrim\\
-Nov & Two Man & 10 & Pilgrim\\
-Dec & Two Man & 2 & Peripheral\\
-Dec & Two Man & 10 & Pilgrim\\
-Jan & Two Man & 2 & Peripheral\\
+Oct & Two Man & 13 & Pilgrim\\
+Nov & Two Man & 8 & Pilgrim\\
+Dec & Two Man & 9 & Pilgrim\\
 \addlinespace
 Jan & Two Man & 11 & Pilgrim\\
 \bottomrule
@@ -161,7 +177,7 @@ Jan & Two Man & 11 & Pilgrim\\
 \end{table}
 
 \hypertarget{graph-1.2-histogram-demonstrating-the-distribution-of-clinic-utilizatation-rates}{%
-\subsubsection{Graph 1.2 Histogram demonstrating the distribution of
+\subsubsection{Graph-1.2 Histogram demonstrating the distribution of
 Clinic Utilizatation
 Rates}\label{graph-1.2-histogram-demonstrating-the-distribution-of-clinic-utilizatation-rates}}
 
@@ -180,44 +196,47 @@ used per month. \textbf{Booking rate} is
 \[\frac{attended \ clinic\  slots}{booked\ slots}\]
 
 \hypertarget{graph-2.1-booking-and-utilization-rate-per-month-for-one-man-clinics}{%
-\subsubsection{Graph 2.1 Booking and Utilization rate per month for One
+\subsubsection{Graph-2.1 Booking and Utilization rate per month for One
 Man
 clinics}\label{graph-2.1-booking-and-utilization-rate-per-month-for-one-man-clinics}}
 
 \begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-6-1} \end{center}
 
 \hypertarget{graph-2.2-booking-and-utilization-rates-per-month-for-two-man-clinics}{%
-\subsubsection{Graph 2.2 Booking and Utilization Rates per month for Two
+\subsubsection{Graph-2.2 Booking and Utilization Rates per month for Two
 Man
 clinics}\label{graph-2.2-booking-and-utilization-rates-per-month-for-two-man-clinics}}
 
 \begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-7-1} \end{center}
 
 \hypertarget{graph-2.3-utilization-and-booking-rate-per-month-across-peripheral-vs-pilgrim-clinics}{%
-\subsubsection{Graph 2.3 Utilization and Booking Rate per month across
+\subsubsection{Graph-2.3 Utilization and Booking Rate per month across
 Peripheral vs Pilgrim
 clinics}\label{graph-2.3-utilization-and-booking-rate-per-month-across-peripheral-vs-pilgrim-clinics}}
 
 \begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-8-1} \end{center}
 
 \hypertarget{graph-2.4-utilization-and-booking-rate-per-month-across-peripheral-vs-pilgrim-clinics}{%
-\subsubsection{Graph 2.4 Utilization and Booking Rate per month across
+\subsubsection{Graph-2.4 Utilization and Booking Rate per month across
 Peripheral vs Pilgrim
 clinics}\label{graph-2.4-utilization-and-booking-rate-per-month-across-peripheral-vs-pilgrim-clinics}}
 
 \begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-9-1} \end{center}
+
+\begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-10-1} \end{center}
+
+\begin{center}\includegraphics{LF2_files/figure-latex/unnamed-chunk-11-1} \end{center}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{discussion}{%
 \subsection{3.Discussion}\label{discussion}}
 
-\protect\hyperlink{graph-2.4}{Graph 2.4} \&
-\protect\hyperlink{graph-2.3}{Graph 2.3} demonstrates again
-underutilized peripheral clinics clinics(p-value:0.011) despite having
-similar Booking Rates. This appears to be more during certain month.
-Again however due the small sample sizes it is not possible to perform
-adequate analysis.
+\protect\hyperlink{graph2.4}{Graph-2.4} \&
+\protect\hyperlink{graph2.3}{Graph-2.3} demonstrates again underutilized
+peripheral clinics clinics(p-value:0.011) despite having similar Booking
+Rates. This appears to be more during certain month. Again however due
+the small sample sizes it is not possible to perform adequate analysis.
 
 Initially it seems that the differences although statistically
 significant were small. However when consulting the last 4 charts it
@@ -225,25 +244,46 @@ seems evident that a notable number of our clinics were underbooked at
 80\% booking rate(which translates to 2 clinic slots for 1-man-clinics
 and about 3 clinic slots for 2-man-clinics). Although those numbers
 warrant attention their statistical significance is not easily
-demonstrated due to the small sample sizes(As shown on table 1). If we
-were to assume their significance the next question we need to answer is
-\emph{why?}.
+demonstrated due to the small sample sizes(As shown on
+\protect\hyperlink{table_1.1}{Table 1.1}). If we were to assume their
+significance the next question we need to answer is \emph{why?}.
+
+On further discussion with staff responsible for clinic booking we now
+think most deficits in booking rates is due to patient calling in 1 or 2
+days before and cancelling. A patient would be considered as DNA only if
+he/she was still recorded to come in on the day of the clinic but
+didn't.
+
+We suggest one possible option is to over book clinics with 1 -2
+patients from the next similar clinic and advising them that this is
+only a potential booking and that they will have a garaunteed booking
+ontop of that. That they should be ready to be called in 1-2 day's
+notice.
+
+This should bring up the booking rate as well as show us a True DNA
+rate.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{recommendations}{%
+\subsection{4.Recommendations}\label{recommendations}}
+
+We suggest the following recommendations:
 
 \begin{itemize}
 \tightlist
 \item
-  Why are our \textbf{Booking rates} occasionally/frequently falling
-  below our arbitrary 80\%?
+  \emph{-}Create waiting list with prebooking patients on multiple
+  clinics
 \item
-  Why are we having low \textcolor{red}{\textbf{Utilization Rate}}? Is
-  it something we need to capitalize on?
+  \emph{-}Allocate Clinic Space by proximity\\
+\item
+  \emph{-}Monthly Review of Booking Rate\\
+\item
+  \emph{-}Improve Communication Between Staff accross sites\\
+\item
+  \emph{-}Disseminate This Report and following monthly Booking Rates to
+  all concerned Staff
 \end{itemize}
-
-And Finally the next pertinent question is do we that small of a
-population to explain our underutilization?\\
-***
-
-\hypertarget{recommendations}{%
-\subsection{4.Recommendations}\label{recommendations}}
 
 \end{document}
