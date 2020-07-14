@@ -1,14 +1,14 @@
 ---
-title: "Clinic Utilisation Report"
+title: "General and Colorectal Clinics Utilisation Report"
 author: "M.Mohamed;M.Ali;M.Rao"
 output:
+  word_document:
+    toc: yes
   pdf_document:
     extra_dependencies: ["flafter"]
     keep_tex: yes
     md_extensions: +bracketed_spans
     pandoc_args: --lua-filter=color-text.lua
-    toc: yes
-  word_document:
     toc: yes
   html_notebook:
     code_folding: hide
@@ -197,7 +197,7 @@ plotPCD <- PCD1 %>% filter(Session.Clinic.Code!="SD-MMCSD") %>%
 
 plotPCD +
   labs(x="Clinic",y="Utilization",
-       subtitle = paste0("Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation \nTotal Number of Clinics: ",table(CU$OneVsTwo)[1], "  between Aug '19 - Jan '20"),
+       subtitle = paste0("Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation \nTotal Number of Clinics: ",table(CU$OneVsTwo)[1], "  between Aug '19 - Jan '20","\n Blue diamonds show median utilization "),
        shape="Month",
        size=NULL
   )+
@@ -254,7 +254,7 @@ plotPCD2 <- PCD2 %>%
 plotPCD2 + labs(
   x = "Clinic",
   y = "Utilization",
-  subtitle = paste0("Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation \nTotal Number of Clinics: ", table(CU$OneVsTwo)[2], "  between Aug '19 - Jan '20"), shape = "Month"
+  subtitle = paste0("Black shows Booking Rates while red shows end Utilization Rates, \nRed line is ~ 80% Utilisation \nTotal Number of Clinics: ", table(CU$OneVsTwo)[2], "  between Aug '19 - Jan '20","\n Blue diamonds show median utilization "), shape = "Month"
 ) +
   theme(
     title = element_text(face = "bold"),
@@ -278,6 +278,7 @@ PHD %>% ggplot(aes(x=M,shape=PvP))+ geom_point(aes(y=MedianBooking),color='black
   labs(subtitle = paste0("Period Between Aug 19 and Jan 20 is shown","\nNo. Peripheral Clinics: ",table(CU$PvP)[1]," | ","No. Pilgrim Clinics:",table(CU$PvP)[2]),shape="Site",x="Month",y="Rate")+theme(title = element_text(face="bold"),plot.subtitle = element_text(face="italic"))
 
 ```
+
 ### Graph-2.4 Utilization and Booking Rate per month across Peripheral vs Pilgrim clinics
 ```{r warning=FALSE,echo=F,message=FALSE,error=F,fig.height=4, fig.width=6,dev='png',dpi=400,fig.align='center'}
 PSD <- CU %>% group_by(Clinic.Hospital,M) %>% summarise(MedianBooking=median(Utilisation),MedianUtil=median(True.U))
@@ -306,22 +307,32 @@ PLotDNA2 +
 
 ***
 
-## 3.Discussion
+## 3.Results & Discussion
 
 [Graph-2.1](#graph2.1) and [Graph-2.2](#graph2.2) show a clear underbooking with even clearer non-attendance.
 [Graph-2.4](#graph2.4) & [Graph-2.3](#graph2.3) demonstrates again underutilized peripheral clinics clinics(p-value:`r round(wilcox.test(CU$True.U~CU$PvP)$p.value,3)`) despite having similar Booking Rates. This appears to be more during certain month. Again however due the small sample sizes it is not possible to perform adequate statistical analysis. 
 
 Initially it seems that the differences although statistically significant were small. However when consulting the last 4 charts it seems evident that a notable number of our clinics were underbooked at 80% booking rate(which translates to 2 clinic slots for 1-man-clinics and about 3 clinic slots for 2-man-clinics). Although those numbers warrant attention their statistical significance is not easily demonstrated due to the small sample sizes(As shown on [Table 1.1](#table_1.1)).  If we were to assume their significance  the next question we need to answer is *why?*.
 
-On further discussion with staff responsible for clinic booking we now  think most deficits in booking rates is due to patient calling in 1 or 2 days before and cancelling. A patient would be considered as DNA only if he/she was still recorded to come in on the day of the clinic but didn't. 
+### 3.1 Current Process and suggested alternative
 
-We suggest one possible option is to over book clinics with 1 -2 patients from the  next similar clinic and advising them that this is only a potential booking and that they will have a garaunteed booking ontop of that. That they should be ready to be called in 1-2 day's notice.
+  On further discussion with staff responsible for clinic booking we now  think most deficits in booking rates is due to patient calling in 1 or 2 days before and cancelling. A patient would be considered as DNA only if he/she was still recorded to come in on the day of the clinic but didn't. 
+
+  Currently patient get booked on to clinics by a primary booking team at pilgrim hospital who allocate clinic slots. Staff in peripheral clinics are not able to book patients on short notice as they wouldnt be aware about cancellations.
+  
+  If we can create joint list of overbooked patients who can be contacted on a short notice and redirect cancellations to be made at center where clinic is to be run this could potentially alleviate the the issue with underbooking clinics. 
+This will only be possible if we have staff covering those sites on the dates patients would call.
 
 
-This should bring up the booking rate as well as show us a complete true utilizaition rate to work on next audit cycle. the aim will be to create a tool whereby this utilization rate is automatically calculated and used to reasses on  a monthly basis.
+
+  We suggest one possible option is to over book clinics with 1 -2 patients from the  next similar clinic and advising them that this is only a potential booking and that they will have a garaunteed booking ontop of that. That they should be ready to be called in 1-2 day's notice. 
+
+
+This should bring up the booking rate as well as show us a complete true utilizaition rate to work on next audit cycle. the aim will be to create a tool whereby this utilization rate is automatically calculated and used to reasses on  a monthly basis. 
   
 
 ***  
+  
 
 ## 4.Recommendations  
 
@@ -332,6 +343,10 @@ We suggest  the following recommendations:
 * Monthly Review of Booking Rate  
 * Improve Communication Between Staff accross sites  
 * Disseminate This Report and following monthly Booking Rates to all concerned Staff  
+* **Using Telephone Clinics to replace peripheral clinics / supplement available clinics**
+* **Using Telephone appointments for patient who cancel within 1-2 days**
+
+The last two recommendations are one of the few ideas that have worked so far in this covid era and there might be a utility for them in current climate and further down the line as well. 
 
   
 
